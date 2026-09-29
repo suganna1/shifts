@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shifts</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 16px; background: #f4f4f9; color: #333; }
+        h1 { text-align: center; color: #1a73e8; font-size: 24px; margin-bottom: 20px; }
+        .card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        label { display: block; font-weight: bold; margin-top: 10px; margin-bottom: 4px; }
+        select, input, button { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { background: #1a73e8; color: white; border: none; font-weight: bold; margin-top: 16px; cursor: pointer; }
+        button:active { background: #1557b0; }
+        .summary { font-size: 18px; font-weight: bold; text-align: center; color: #2e7d32; }
+        ul { list-style: none; padding: 0; }
+        li { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .delete-btn { width: auto; padding: 6px 12px; margin: 0; background: #d32f2f; }
+    </style>
+</head>
+<body>
+    <h1>Shift Tracker</h1>
+    
+    <div class="card">
+        <label for="site">Job Site</label>
+        <select id="site">
+            <option value="White City">White City</option>
+            <option value="Mitre Yard">Mitre Yard</option>
+        </select>
+
+        <label for="date">Shift Date</label>
+        <input type="date" id="date">
+
+        <label for="hours">Hours Worked</label>
+        <input type="number" id="hours" value="12">
+
+        <label for="rate">Hourly Rate (£)</label>
+        <input type="number" id="rate" value="11.50" step="0.01">
+
+        <button onclick="addShift()">Save Shift</button>
+    </div>
+
+    <div class="card summary">
+        Total Earnings: £<span id="total-earnings">0.00</span>
+    </div>
+
+    <h3>Logged Shifts</h3>
+    <ul id="shift-list"></ul>
+
+    <script>
+        document.getElementById('date').valueAsDate = new Date();
+
+        function getShifts() {
+            return JSON.parse(localStorage.getItem('shifts') || '[]');
+        }
+
+        function saveShifts(shifts) {
+            localStorage.setItem('shifts', JSON.stringify(shifts));
+            render();
+        }
+
+        function addShift() {
+            const site = document.getElementById('site').value;
+            const date = document.getElementById('date').value;
+            const hours = parseFloat(document.getElementById('hours').value) || 0;
+            const rate = parseFloat(document.getElementById('rate').value) || 0;
+
+            if (!date) return alert('Select a date');
+
+            const shifts = getShifts();
+            shifts.push({ id: Date.now(), site, date, hours, rate, total: hours * rate });
+            saveShifts(shifts);
+        }
+
+        function deleteShift(id) {
+            const shifts = getShifts().filter(s => s.id !== id);
+            saveShifts(shifts);
+        }
+
+        function render() {
+            const shifts = getShifts();
+            const list = document.getElementById('shift-list');
+            const totalEl = document.getElementById('total-earnings');
+            
+            list.innerHTML = '';
+            let grandTotal = 0;
+
+            shifts.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(shift => {
+                grandTotal += shift.total;
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div>
+                        <strong>${shift.site}</strong><br>
+                        <small>${shift.date} • ${shift.hours} hrs @ £${shift.rate}/hr</small><br>
+                        <span style="color:#2e7d32; font-weight:bold;">£${shift.total.toFixed(2)}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteShift(${shift.id})">Delete</button>
+                `;
+                list.appendChild(li);
+            });
+
+            totalEl.textContent = grandTotal.toFixed(2);
+        }
+
+        render();
+    </script>
+</body>
+</html>
