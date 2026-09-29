@@ -1,108 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Shifts</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 16px; background: #f4f4f9; color: #333; }
-        h1 { text-align: center; color: #1a73e8; font-size: 24px; margin-bottom: 20px; }
-        .card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
-        label { display: block; font-weight: bold; margin-top: 10px; margin-bottom: 4px; }
-        select, input, button { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        button { background: #1a73e8; color: white; border: none; font-weight: bold; margin-top: 16px; cursor: pointer; }
-        button:active { background: #1557b0; }
-        .summary { font-size: 18px; font-weight: bold; text-align: center; color: #2e7d32; }
-        ul { list-style: none; padding: 0; }
-        li { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
-        .delete-btn { width: auto; padding: 6px 12px; margin: 0; background: #d32f2f; }
-    </style>
-</head>
-<body>
-    <h1>Shift Tracker</h1>
-    
-    <div class="card">
-        <label for="site">Job Site</label>
-        <select id="site">
-            <option value="White City">White City</option>
-            <option value="Mitre Yard">Mitre Yard</option>
-        </select>
+<style>
+    :root {
+        --primary: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        --accent: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --danger: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        --card-bg: #ffffff;
+        --bg: #f0f3f8;
+    }
 
-        <label for="date">Shift Date</label>
-        <input type="date" id="date">
+    body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; 
+        margin: 0; 
+        padding: 16px; 
+        background: var(--bg); 
+        color: #1e293b; 
+    }
 
-        <label for="hours">Hours Worked</label>
-        <input type="number" id="hours" value="12">
+    /* App Header Banner */
+    h1 { 
+        text-align: center; 
+        background: var(--primary); 
+        color: white; 
+        padding: 18px; 
+        border-radius: 16px; 
+        font-size: 22px; 
+        font-weight: 700;
+        margin: 0 0 20px 0; 
+        box-shadow: 0 8px 20px rgba(30, 60, 114, 0.25);
+        letter-spacing: 0.5px;
+    }
 
-        <label for="rate">Hourly Rate (£)</label>
-        <input type="number" id="rate" value="11.50" step="0.01">
+    /* 3D Elevated Cards */
+    .card { 
+        background: var(--card-bg); 
+        padding: 20px; 
+        border-radius: 18px; 
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04); 
+        margin-bottom: 20px; 
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
 
-        <button onclick="addShift()">Save Shift</button>
-    </div>
+    label { 
+        display: block; 
+        font-weight: 600; 
+        font-size: 14px;
+        color: #475569;
+        margin-top: 12px; 
+        margin-bottom: 6px; 
+    }
 
-    <div class="card summary">
-        Total Earnings: £<span id="total-earnings">0.00</span>
-    </div>
+    select, input { 
+        width: 100%; 
+        padding: 14px; 
+        border: 1.5px solid #e2e8f0; 
+        border-radius: 12px; 
+        font-size: 16px; 
+        background: #f8fafc;
+        box-sizing: border-box; 
+        transition: all 0.2s ease;
+    }
 
-    <h3>Logged Shifts</h3>
-    <ul id="shift-list"></ul>
+    select:focus, input:focus {
+        outline: none;
+        border-color: #2a5298;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
+    }
 
-    <script>
-        document.getElementById('date').valueAsDate = new Date();
+    /* Vibrant 3D Primary Button */
+    button { 
+        width: 100%;
+        background: var(--primary); 
+        color: white; 
+        border: none; 
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 700; 
+        border-radius: 14px;
+        margin-top: 20px; 
+        cursor: pointer; 
+        box-shadow: 0 6px 18px rgba(42, 82, 152, 0.35);
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
 
-        function getShifts() {
-            return JSON.parse(localStorage.getItem('shifts') || '[]');
-        }
+    button:active { 
+        transform: translateY(2px);
+        box-shadow: 0 3px 10px rgba(42, 82, 152, 0.2);
+    }
 
-        function saveShifts(shifts) {
-            localStorage.setItem('shifts', JSON.stringify(shifts));
-            render();
-        }
+    /* Summary Card Highlight */
+    .summary { 
+        background: var(--accent);
+        color: white;
+        font-size: 20px; 
+        font-weight: 700; 
+        text-align: center; 
+        box-shadow: 0 8px 20px rgba(56, 239, 125, 0.3);
+    }
 
-        function addShift() {
-            const site = document.getElementById('site').value;
-            const date = document.getElementById('date').value;
-            const hours = parseFloat(document.getElementById('hours').value) || 0;
-            const rate = parseFloat(document.getElementById('rate').value) || 0;
+    .summary span {
+        font-size: 24px;
+    }
 
-            if (!date) return alert('Select a date');
+    h3 {
+        font-size: 18px;
+        color: #334155;
+        margin-bottom: 12px;
+    }
 
-            const shifts = getShifts();
-            shifts.push({ id: Date.now(), site, date, hours, rate, total: hours * rate });
-            saveShifts(shifts);
-        }
+    ul { list-style: none; padding: 0; margin: 0; }
 
-        function deleteShift(id) {
-            const shifts = getShifts().filter(s => s.id !== id);
-            saveShifts(shifts);
-        }
+    /* Individual Shift Items */
+    li { 
+        background: white; 
+        padding: 16px; 
+        border-radius: 14px; 
+        margin-bottom: 12px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+        border: 1px solid #f1f5f9;
+    }
 
-        function render() {
-            const shifts = getShifts();
-            const list = document.getElementById('shift-list');
-            const totalEl = document.getElementById('total-earnings');
-            
-            list.innerHTML = '';
-            let grandTotal = 0;
-
-            shifts.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(shift => {
-                grandTotal += shift.total;
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <div>
-                        <strong>${shift.site}</strong><br>
-                        <small>${shift.date} • ${shift.hours} hrs @ £${shift.rate}/hr</small><br>
-                        <span style="color:#2e7d32; font-weight:bold;">£${shift.total.toFixed(2)}</span>
-                    </div>
-                    <button class="delete-btn" onclick="deleteShift(${shift.id})">Delete</button>
-                `;
-                list.appendChild(li);
-            });
-
-            totalEl.textContent = grandTotal.toFixed(2);
-        }
-
-        render();
-    </script>
-</body>
-</html>
+    /* 3D Delete Button */
+    .delete-btn { 
+        width: auto; 
+        padding: 8px 14px; 
+        margin: 0; 
+        background: var(--danger); 
+        font-size: 13px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(255, 65, 108, 0.3);
+    }
+</style>
